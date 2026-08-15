@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Feliz Cumpleaños, Ashley</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -261,16 +261,17 @@
     z-index:6;
     animation:floatCake 3.2s infinite ease-in-out;
     filter:drop-shadow(0 18px 24px rgba(0,0,0,.4));
+    --cakeScale:1;
   }
   @keyframes floatCake{
-    0%,100%{ transform:translateX(-50%) translateY(0) rotate(-2deg); }
-    50%{ transform:translateX(-50%) translateY(-14px) rotate(2deg); }
+    0%,100%{ transform:translateX(-50%) translateY(0) rotate(-2deg) scale(var(--cakeScale)); }
+    50%{ transform:translateX(-50%) translateY(-14px) rotate(2deg) scale(var(--cakeScale)); }
   }
   .cake-wrap.burst{
     animation:cakeBurst .6s ease-in forwards;
   }
   @keyframes cakeBurst{
-    100%{ opacity:0; transform:translateX(-50%) translateY(-40px) scale(1.4); }
+    100%{ opacity:0; transform:translateX(-50%) translateY(-40px) scale(calc(var(--cakeScale) * 1.4)); }
   }
   .cake-wrap .glow{
     position:absolute;
@@ -769,7 +770,16 @@
   }
 
   @media (max-width:520px){
-    .card{ padding:28px 18px; }
+    .card{ padding:26px 16px; border-radius:20px; }
+    h1{ font-size:clamp(34px,9.5vw,48px); }
+    .subtitle{ margin-bottom:22px; }
+    .message{ padding:24px 16px; }
+    .cake-wrap{ --cakeScale:.72; bottom:112px; }
+    .subs{ bottom:14px; font-size:clamp(13px,3.4vw,15px); padding:11px 18px; }
+    .btn-music{ padding:9px 16px; font-size:13px; }
+    .env{ height:300px; }
+    .reasons{ padding:52px 14px 60px; }
+    .reason-card{ min-height:110px; }
     .person{ transform-origin:bottom center; }
   }
 </style>
@@ -898,7 +908,6 @@
     p.className = 'person';
     p.style.left = spot.x;
     p.style.bottom = spot.bottom;
-    p.style.transform = 'scale(' + spot.s + ')';
     p.style.animationDelay = (i * 0.25) + 's';
     p.innerHTML =
       '<div class="head" style="background:radial-gradient(circle at 35% 30%, ' + skin + ', #d9a06b);">' +
@@ -917,6 +926,30 @@
     return p;
   }
   const people = spots.map(createPerson);
+
+  function applyLayout(p, left, bottom, s) {
+    p.style.left = left;
+    p.style.bottom = bottom;
+    p.style.scale = String(s);
+  }
+  function layoutScene() {
+    const narrow = window.innerWidth <= 520;
+    const n = people.length;
+    people.forEach((p, i) => {
+      if (narrow) {
+        const x = n === 1 ? 50 : 4 + (i / (n - 1)) * 88;
+        applyLayout(p, x + '%', '14px', 0.5 + (i % 3) * 0.08);
+      } else {
+        applyLayout(p, spots[i].x, spots[i].bottom, spots[i].s);
+      }
+    });
+  }
+  layoutScene();
+  let sceneTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(sceneTimer);
+    sceneTimer = setTimeout(layoutScene, 150);
+  });
 
   /* ---------- Pastel ---------- */
   const wrap = document.createElement('div');
